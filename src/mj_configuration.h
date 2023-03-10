@@ -20,7 +20,7 @@ struct MjConfiguration
   /** If true, enable mc_rtc controller inside MuJoCo simulation */
   bool with_controller = true;
   /** If true, sync simulation time and real time */
-  bool sync_real_time = false;
+  bool sync_real_time = true;
   /** If true, start in step-by-step mode */
   bool step_by_step = false;
   /** mc_rtc configuration file */
