@@ -432,6 +432,25 @@ void MjSimImpl::setSimulationInitialState()
         qInit.push_back(r.encoders[r.mj_jnt_to_rjo[i]]);
         alphaInit.push_back(r.alphas[r.mj_jnt_to_rjo[i]]);
       }
+      // initialize mocap bodies positions (origin)
+      if (r.name == "human")
+      {
+        const auto refpose = sva::PTransformd::Identity();
+        auto pos = refpose.translation();
+        auto quat = Eigen::Quaterniond(refpose.rotation()).inverse();
+        for (size_t i = 0; i < model->nmocap; i++)
+        {
+          data->mocap_pos[3 * i + 0] = pos.x();
+          data->mocap_pos[3 * i + 1] = pos.y() + 1.0;
+          data->mocap_pos[3 * i + 2] = pos.z();
+
+          data->mocap_quat[4 * i + 0]= quat.w();
+          data->mocap_quat[4 * i + 1]= quat.x();
+          data->mocap_quat[4 * i + 2]= quat.y();
+          data->mocap_quat[4 * i + 3]= quat.z();
+        }
+        
+      }
     }
   }
   // set initial qpos, qvel in mujoco
