@@ -8,6 +8,7 @@ add_subdirectory(hrp4_mj_description)
 add_subdirectory(table)
 add_subdirectory(box)
 add_subdirectory(franka_sim)
+add_subdirectory(e2dr_mj_description)
 
 function(setup_env_object NAME ENV_OBJECT)
   set(YAML_OUT "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.yaml")
