@@ -150,6 +150,13 @@ struct MjRobot
   /** Next torque desired by mc_rtc */
   std::vector<double> mj_next_ctrl_jointTorque;
 
+  /** Mocap positions to set in mujoco */
+  std::vector<double> mj_mocap_pos;
+  /** Names of the mocap bodies inside MuJoCo */
+  std::vector<std::string> mj_mocap_names;
+  /** Correspondance from mocap body name to id inside MuJoCo */
+  std::vector<int> mj_mocap_ids;
+
   /** Initialize some data after the simulation has started */
   void initialize(mjModel * model, const mc_rbdyn::Robot & robot);
 
@@ -164,6 +171,9 @@ struct MjRobot
 
   /** Send control to MuJoCo */
   void sendControl(const mjModel & model, mjData & data, size_t interp_idx, size_t frameskip_, bool torque_control);
+
+  /** Send direct position of mocap bodies MuJoCo */
+  void sendDirectpos(mc_control::MCGlobalController & ctl, const mjModel & model, mjData & data);
 
   /** Run PD control for a given joint */
   double PD(size_t jnt_id, double q_ref, double q, double qdot_ref, double qdot);
