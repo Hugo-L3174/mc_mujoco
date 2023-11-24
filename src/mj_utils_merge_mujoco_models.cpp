@@ -543,6 +543,29 @@ static void mj_object_from_xml(const std::string & name, const std::string & xml
   mj_deleteModel(model);
 }
 
+
+static void get_mocap_names(const pugi::xml_node & in,
+                            const std::string & prefix,
+                            std::vector<std::string> & mocap_bodies)
+{
+  auto prefixed = [&prefix](const char * name) -> std::string {
+    if(prefix.size())
+    {
+      return fmt::format("{}_{}", prefix, name);
+    }
+    return name;
+  };
+  for(const auto & b : in.children("body"))
+  {
+    if (b.attribute("mocap"))
+    {
+      mocap_bodies.push_back(prefixed(b.attribute("name").value()));
+    }
+
+  }
+
+}
+
 static MjRobot mj_robot_from_xml(const std::string & name, const std::string & xmlFile, const std::string & prefix = "")
 {
   MjRobot out;
@@ -570,6 +593,7 @@ static MjRobot mj_robot_from_xml(const std::string & name, const std::string & x
   get_joint_names(root.child("worldbody"), prefix, out.mj_jnt_names, out.root_joint);
   get_motor_names(root.child("actuator"), prefix, out.mj_jnt_names, out.mj_mot_names, out.mj_pos_act_names,
                   out.mj_vel_act_names);
+  get_mocap_names(root.child("worldbody"), prefix, out.mj_mocap_names);
   return out;
 }
 
