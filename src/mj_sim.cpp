@@ -316,6 +316,12 @@ void MjRobot::initialize(mjModel * model, const mc_rbdyn::Robot & robot)
     init_sensor_id("accelerometer sensor", "body sensor", bs.name(), "accelerometer", mjSENS_ACCELEROMETER,
                    mc_bs_to_mj_accelerometer_id);
   }
+  mj_mocap_ids.resize(0);
+  for(const auto & m : mj_mocap_names)
+  {
+    mj_mocap_ids.push_back(mj_name2id(model, mjOBJ_BODY, m.c_str()));
+    mc_rtc::log::info("pushed id = {} for body {}",mj_name2id(model, mjOBJ_BODY, m.c_str()), m);
+  }
   reset(robot);
 }
 
@@ -786,6 +792,60 @@ void MjRobot::sendControl(const mjModel & model,
   }
 }
 
+void MjRobot::sendDirectpos(mc_control::MCGlobalController & ctl, const mjModel & model, mjData & data)
+{
+  for (size_t i = 0; i < model.nmocap; i++)
+  {
+    // mocap_ids are filled using mocap names list in MJRobot::Initialize()
+    auto mocap_id = mj_mocap_ids[i];
+    auto mocap_name = mj_mocap_names[i];
+
+    // get desired mocap pose 
+    // mc_rtc::log::info("getting mocap pose of segment {}, id {}", mocap_name, mocap_id);
+
+    const auto removed_prefixes = [](std::string prefix1, std::string prefix2, std::string mocap_name) -> const std::string {
+      if(prefix1.size()&&prefix2.size())
+        {
+          return mocap_name.substr(prefix1.size() + 1 + prefix2.size() + 1);
+        }
+      return mocap_name;
+    };
+
+    const auto & short_mocap_name = removed_prefixes("human","mocap",mocap_name);
+
+    // mc_rtc::log::info("accessing datastore with name {}", short_mocap_name);
+
+    try
+    {
+      const auto refpose = ctl.controller().datastore().call<sva::PTransformd>("XsensPlugin::GetSegmentPose", short_mocap_name);
+      // mc_rtc::log::info("Mujoco using refpose {} for mocap {}", refpose.translation().transpose(), short_mocap_name);
+
+      auto pos = refpose.translation();
+      // mc_rtc::log::info("pos is {}", pos.transpose());
+      auto quat = Eigen::Quaterniond(refpose.rotation()).inverse();
+      // mc_rtc::log::info("quat is {} {} {} {}", quat.w(), quat.x(), quat.y(), quat.z());
+
+      data.mocap_pos[3 * i + 0] = pos.x();
+      data.mocap_pos[3 * i + 1] = pos.y();
+      data.mocap_pos[3 * i + 2] = pos.z();
+
+
+      data.mocap_quat[4 * i + 0]= quat.w();
+      data.mocap_quat[4 * i + 1]= quat.x();
+      data.mocap_quat[4 * i + 2]= quat.y();
+      data.mocap_quat[4 * i + 3]= quat.z();
+
+
+    }
+    catch(...)
+    {
+      mc_rtc::log::error("No pose for segment {}", short_mocap_name);
+    }
+
+  }
+
+}
+
 bool MjSimImpl::controlStep()
 {
   auto interp_idx = iterCount_ % frameskip_;
@@ -805,8 +865,24 @@ bool MjSimImpl::controlStep()
   // On each control iter
   for(auto & r : robots)
   {
-    r.sendControl(*model, *data, interp_idx, frameskip_, config.torque_control);
+    if (r.name == "human")
+    {
+      // controller argument is needed to access datastore positions
+      r.sendDirectpos(*controller, *model, *data);
+    }
+    else
+    {
+      r.sendControl(*model, *data, interp_idx, frameskip_, config.torque_control);
+    }
+
+    // fixed base box manipulation
+    if (r.name == "box")
+    {
+      setRobotPosW(r.name, controller->robots().robot(r.name).posW());
+    }
+    
   }
+  
   iterCount_++;
   return false;
 }
@@ -900,6 +976,7 @@ bool MjSimImpl::stepSimulation()
     }
     rem_steps--;
   }
+  config.sync_real_time=true;
   if(config.sync_real_time)
   {
     std::this_thread::sleep_until(start_step + duration_us(1e6 * model->opt.timestep) + mj_sync_delay);
