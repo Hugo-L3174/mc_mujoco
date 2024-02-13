@@ -16,21 +16,21 @@
             <!-- <freejoint name="root" /> -->
             <!-- The second geom tag each time is the collision one -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="back_support" />
-            <geom type="mesh" mesh="back_support" />
+            <!-- <geom type="mesh" mesh="back_support" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="chair" />
-            <geom type="mesh" mesh="chair" />
+            <!-- <geom type="mesh" mesh="chair" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="left_handle" />
-            <geom type="mesh" mesh="left_handle" />
+            <!-- <geom type="mesh" mesh="left_handle" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="right_handle" />
-            <geom type="mesh" mesh="right_handle" />
+            <!-- <geom type="mesh" mesh="right_handle" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="leg_fl" />
-            <geom type="mesh" mesh="leg_fl" />
+            <!-- <geom type="mesh" mesh="leg_fl" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="leg_fr" />
-            <geom type="mesh" mesh="leg_fr" />
+            <!-- <geom type="mesh" mesh="leg_fr" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="leg_rl" />
-            <geom type="mesh" mesh="leg_rl" />
+            <!-- <geom type="mesh" mesh="leg_rl" /> -->
             <geom type="mesh" contype="0" conaffinity="0" group="1" mesh="leg_rr" />
-            <geom type="mesh" mesh="leg_rr" />
+            <!-- <geom type="mesh" mesh="leg_rr" /> -->
         </body>
     </worldbody>
 </mujoco>
