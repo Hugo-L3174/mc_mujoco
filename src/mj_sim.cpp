@@ -865,7 +865,7 @@ bool MjSimImpl::controlStep()
   // On each control iter
   for(auto & r : robots)
   {
-    if (r.name == "human")
+    if (r.name == "human" && controller->controller().datastore().has("XsensPlugin::Ready"))
     {
       // controller argument is needed to access datastore positions
       r.sendDirectpos(*controller, *model, *data);
